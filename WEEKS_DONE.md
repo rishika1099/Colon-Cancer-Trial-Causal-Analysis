@@ -98,8 +98,8 @@ Pre-committed gate was ±0.05. **PASS.**
 ## One-shot reproduce from a fresh clone
 
 ```bash
-git clone https://github.com/rishika1099/moertel-causal
-cd moertel-causal
+git clone https://github.com/rishika1099/Moertel-Colon-Cancer-Causal-Inference
+cd Moertel-Colon-Cancer-Causal-Inference
 
 python3.11 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt

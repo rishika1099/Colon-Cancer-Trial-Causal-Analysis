@@ -22,7 +22,7 @@ Each Q has an explicit estimand, identification argument (graph + non-graph), es
 
 ```bash
 git clone <repo>
-cd moertel-causal
+cd Moertel-Colon-Cancer-Causal-Inference
 
 # Python
 python -m venv .venv && source .venv/bin/activate
@@ -40,7 +40,7 @@ Every notebook fixes seeds (`np.random.seed(42)`, `set.seed(42)`). A clean clone
 ## Repo map
 
 ```
-moertel-causal/
+Moertel-Colon-Cancer-Causal-Inference/
 ├── 00_estimands.qmd          # Week 1: the contract (write before any code)
 ├── 01_dag.R                  # Week 1: dagitty G_trial, G_observational
 ├── 02_data_audit.ipynb       # Week 1: balance tables, SMDs, data-warts

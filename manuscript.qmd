@@ -350,8 +350,8 @@ Three pedagogically heavy findings emerge:
 # Reproducibility
 
 ```bash
-git clone https://github.com/rishika1099/moertel-causal
-cd moertel-causal
+git clone https://github.com/rishika1099/Moertel-Colon-Cancer-Causal-Inference
+cd Moertel-Colon-Cancer-Causal-Inference
 
 # Python
 python3.11 -m venv .venv && source .venv/bin/activate

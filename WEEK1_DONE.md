@@ -130,7 +130,7 @@ Walk through each section of `00_estimands.qmd` and confirm:
 ## How to reproduce Week 1 from a fresh clone
 
 ```bash
-cd moertel-causal
+cd Moertel-Colon-Cancer-Causal-Inference
 
 # 1. Data — uses Rscript subprocess (no rpy2 needed yet).
 python3 scripts/pull_colon_data.py
