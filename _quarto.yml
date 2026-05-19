@@ -1,0 +1,45 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - 00_estimands.qmd
+    - manuscript.qmd
+    - notebooks/*.ipynb
+
+website:
+  title: "Beyond the Hazard Ratio"
+  description: "Causal-inference re-analysis of the Moertel 1990 adjuvant colon cancer trial."
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: 00_estimands.qmd
+        text: Estimands & DAG
+      - href: manuscript.qmd
+        text: Manuscript
+      - text: Notebooks
+        menu:
+          - href: notebooks/02_data_audit.ipynb
+            text: Data Audit
+          - href: notebooks/Q1_ate.ipynb
+            text: Q1 — ATE
+          - href: notebooks/Q2_forest_plot.ipynb
+            text: Q2 — Forget randomization
+          - href: notebooks/Q3_cate_by_nodes.ipynb
+            text: Q3 — CATE
+          - href: notebooks/Q5_transported_ate.ipynb
+            text: Q5 — Transport
+          - href: notebooks/S2_sensitivity_table.ipynb
+            text: Sensitivity
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-fold: true
+    fig-width: 7
+    fig-height: 5
+
+execute:
+  freeze: auto

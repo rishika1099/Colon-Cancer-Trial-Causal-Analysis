@@ -1,0 +1,11 @@
+G_trial adjustment sets for rx -> Y_death:
+ {}
+
+G_observational adjustment sets for rx -> Y_death (U latent):
+{ Z }
+
+G_trial implied conditional independencies:
+M _||_ S | Z
+S _||_ Y_dt | Z
+S _||_ rx
+Z _||_ rx

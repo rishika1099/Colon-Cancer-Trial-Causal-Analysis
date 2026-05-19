@@ -1,0 +1,6 @@
+Q,estimand,scale,point,lo,hi,E_value,E_value_CI_bound,breakdown_interpretation
+Q1,Randomized HR (Lev+5FU vs Obs),HR,0.6895547905117989,0.5463679420189715,0.8702666693084651,2.258234043455018,3.0629947332089555,Unmeasured U with HR_U >= 2.26 on both treatment and outcome would nullify the point estimate; HR_U >= 3.06 would shift the CI to cover 1.
+Q2,Backdoor-adjusted HR (IPW),HR,0.7298534761081464,0.5769226949826545,0.9233231786854222,2.082275779423458,2.8607713711756206,Unmeasured confounder U beyond measured Z would need HR_U >= 2.08 to nullify.
+Q3,Marginal CATE on 5-yr RMST,ΔRMST (yrs),0.2732123312241054,0.25504236354143894,0.2913822989067718,,,See Q3 calibration + BLP for moderator-level sensitivity; pointwise CATE CIs are wide and not jointly valid.
+Q4,Natural indirect effect (NIE),ΔRMST (yrs),0.2922372571830732,0.1228565778469487,0.4809769860355483,,,"Imai-rho sensitivity: NIE remains positive across rho in [-0.95, 0.95] — extremely robust."
+Q5,Transported HR to SEER 1990,HR,0.7072240225172717,0.5219240073051011,0.9583115760626978,2.179065930132646,3.2407599046176534,E-value 2.18; Dahabreh tipping HR_U = 2.75 at 25% target prevalence (data/q5_dahabreh_bounds.csv).

@@ -1,0 +1,357 @@
+---
+title: "Estimands and Identification"
+subtitle: "The contract for *Beyond the Hazard Ratio*"
+author: "Rishika"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+  pdf:
+    documentclass: article
+    geometry: margin=1in
+    number-sections: true
+---
+
+> **Read this document before any code.** Every notebook downstream is bound by what is written here. If something in this document is wrong, every number in the manuscript is wrong. The point of writing it first is to make the assumptions audit-able before the analysis is anchored to a result.
+
+# Preliminaries
+
+We follow the notation of the Kelleher course throughout.
+
+**Causal state.** A random variable treated as a possible cause. In this paper the causal state is `rx ∈ {Obs, Lev, Lev+5FU}`, the randomized treatment arm in Moertel et al. (1990). The headline contrast is `rx = Lev+5FU` vs `rx = Obs`; Lev-alone is reported as a secondary contrast but is not the focus.
+
+**Outcome.** A random variable treated as being affected by some cause. Our primary outcome is `Y_death`, the time to death from any cause (months from randomization). A secondary outcome is `M`, the time to (or indicator of) cancer recurrence — used as the *mediator* in Q4 and as a deliberate *bad control* in Q2.
+
+**Potential outcome.** $Y_d^{(rx=r)}$ is the value `Y_death` would take if the patient were assigned to arm $r$. Equivalent shorthand: $Y_d(r)$, $Y_d^{(r)}$. By the consistency axiom, the observed $Y_d$ equals $Y_d^{(rx=r)}$ for the arm actually assigned.
+
+**Individual causal effect.** $\delta_i = Y_{d,i}^{(rx=\text{Lev+5FU})} - Y_{d,i}^{(rx=\text{Obs})}$. Never observed directly — the *fundamental problem of causal inference* is that we see only one potential outcome per unit. Statistics of $\delta_i$ are what we estimate; *which* statistic is the estimand.
+
+**SUTVA.** $Y_{d,i}^{(rx_i)} \perp rx_j$ for $i \neq j$. No interference between trial participants. Defensible here: patients are not in contact with one another's chemotherapy regimens.
+
+**Pearl's ladder.**
+
+| Rung | Object | Question | Where it appears below |
+|------|--------|----------|------------------------|
+| 1    | $P(Y_d \mid rx)$ | "How does survival vary with treatment in our data?" | Q2 baseline diagnostic |
+| 2    | $P(Y_d \mid do(rx))$ | "What if we intervened to give Lev+5FU?" | Q1, Q2, Q3, Q5 |
+| 3    | $P(Y_{d,rx'} \mid rx, Y_d)$ | "For this specific patient who recurred, would she have recurred under no treatment?" | Out of scope here; mediation in Q4 is rung-2 with a mediator decomposition, not rung-3 |
+
+Q1–Q3 and Q5 are rung-2 estimands. Q4 stays at rung-2 by defining $NDE$ and $NIE$ as nested-do statements (Pearl 2001; Imai-Keele-Tingley 2010), not as joint distributions of $\{Y_{d,rx=1,M=0}, Y_{d,rx=0,M=0}\}$ for a fixed individual.
+
+# The 2×2 cell map
+
+Every causal claim in this paper lives in one cell:
+
+|                       | **No selection**          | **Selection ($S$ matters)** |
+|-----------------------|---------------------------|------------------------------|
+| **Statistical**       | descriptive Kaplan-Meier  | n/a in this paper            |
+| **Causal**            | Q1, Q2, Q3, Q4            | **Q5**                       |
+
+The data audit (`02_data_audit.ipynb`) is descriptive — pre-causal. Q1–Q4 ignore selection because the Moertel trial protocol defines the eligible population and we estimate within it. Q5 explicitly transports out of the trial.
+
+# The DAG
+
+We commit to two graphs, both drawn in `01_dag.R` via `dagitty`:
+
+**$G_{\text{trial}}$** — the actual causal structure under randomization.
+
+Nodes: `rx` (treatment), `Z` (baseline covariates: age, sex, obstruct, perfor, adhere, nodes, differ, extent, surg), `M` (recurrence), `Y_death`, `S` (trial-enrollment indicator), `U` (unobserved frailty — biological aggressiveness, comorbidity load, immune competence).
+
+Edges:
+
+- `Z → M`, `Z → Y_death` (covariates affect both recurrence and death)
+- `rx → M`, `M → Y_death` (the indirect mechanism)
+- `rx → Y_death` (the direct mechanism — possibly via immunomodulation, second primary suppression)
+- `U → Z`, `U → Y_death` (unobserved frailty drives both measured covariates and death)
+- `Z → S` (trial enrolled within stage B/C, certain age range, performance status)
+- *No edge* `Z → rx` and *no edge* `U → rx`. Randomization severs both.
+
+**$G_{\text{observational}}$** — the counterfactual world in which `rx` is *not* randomized but assigned conditional on measured baseline `Z`. Same as $G_{\text{trial}}$ plus the single edge `Z → rx`. Used for Q2's identification exercise. Unmeasured `U → rx` is *not* drawn — it is treated as a sensitivity threat, bounded by E-value in §S1 rather than baked into identification.
+
+Both DAGs and their `dagitty` adjustment sets are checked into `figures/dag_trial.svg` and `figures/dag_observational.svg`.
+
+# Q1 — The randomized ATE
+
+## Estimand
+
+Three scales, same intervention contrast:
+
+- **Log hazard ratio.** $\delta_{HR} = \log\frac{h_{Y_d}(t \mid do(rx=\text{Lev+5FU}))}{h_{Y_d}(t \mid do(rx=\text{Obs}))}$, assumed constant in $t$ (proportional hazards).
+- **5-year RMST contrast.** $\delta_{\text{RMST}(5y)} = E[\min(Y_d, 60) \mid do(rx=\text{Lev+5FU})] - E[\min(Y_d, 60) \mid do(rx=\text{Obs}))]$. Units: months of life within the 5-year window.
+- **5-year risk difference.** $\delta_{5\text{yr}} = P(Y_d \leq 60 \mid do(rx=\text{Lev+5FU})) - P(Y_d \leq 60 \mid do(rx=\text{Obs}))$.
+
+## Cell
+
+Causal × no-selection. Rung 2.
+
+## Identification — graphical
+
+In $G_{\text{trial}}$ the edge `Z → rx` is severed. Every back-door path from `rx` into `Y_death` runs through `Z` or `U`, all entering `rx` — but those arrowheads do not exist. The empty set $\emptyset$ satisfies the back-door criterion. Hence $P(Y_d \mid do(rx)) = P(Y_d \mid rx)$.
+
+## Identification — non-graphical
+
+Random assignment by protocol implies $\{Y_d^{(rx=r)}\}_r \perp rx$. Then by the Kelleher derivation (L1, slide "The Framework"):
+
+$$\delta_{\text{naive}} = E[Y_d \mid rx=1] - E[Y_d \mid rx=0] = E[Y_d^{(rx=1)}] - E[Y_d^{(rx=0)}] = \delta.$$
+
+## Estimators
+
+- Kaplan-Meier curves + log-rank test (3-arm; `lifelines.KaplanMeierFitter`, `lifelines.statistics.multivariate_logrank_test`).
+- Cox PH (`lifelines.CoxPHFitter`) — gives $\delta_{HR}$.
+- RMST(5y) via lifelines `restricted_mean_survival_time`.
+
+## Failure mode
+
+Differential dropout or non-compliance would re-introduce a back-door path. ITT preserves randomization-based identification at the cost of estimating the effect of *assignment*, not of received-treatment. Moertel reports ITT; we follow.
+
+## Target population
+
+The 929 patients meeting Moertel inclusion criteria (Dukes stage B2 or C resected colon carcinoma, age 18–75, no prior chemotherapy, randomized at one of 50+ NCCTG/ECOG sites, 1984–1987). Extrapolation beyond this is Q5.
+
+## Naive-reader mistake
+
+Reporting $\hat{\delta}_{HR}$ without (i) a PH check (Schoenfeld) and (ii) an absolute-scale companion (RMST or 5-year RD). A hazard ratio on its own does not tell a clinician how many months of life are at stake.
+
+## Ground-truth anchor
+
+Moertel et al. NEJM 1990 reported HR ≈ 0.67 for Lev+5FU vs Observation on death. **If Q1's $\hat\delta_{HR}$ does not land within ±0.05 of 0.67, stop and debug before proceeding to Q2.**
+
+# Q2 — Forget the randomization
+
+## Estimand
+
+Same as Q1.
+
+## Cell
+
+Causal × no-selection — but now we *pretend* we did not observe the randomization label, and identify via the observational graph $G_{\text{observational}}$. The pedagogical move is to show four estimators converge on Q1's answer; then to deliberately break identification with a post-treatment "control" to show how easily an EHR analyst can get this wrong.
+
+## Identification — graphical
+
+In $G_{\text{observational}}$ the back-door paths from `rx` to `Y_death` are
+`rx ← Z → Y_death` and `rx ← Z ← U → Y_death`.
+Both paths are blocked by conditioning on $Z$ (the first is a fork at $Z$; the second has $Z$ as a chain node $U \to Z \to rx$). `dagitty` confirms (`01_dag.R`):
+
+```
+G_observational adjustment sets for rx -> Y_death (U latent): { Z }
+```
+
+The working assumption is that any direct `U → rx` path is absent — i.e., observational treatment assignment is fully determined by measured `Z`. This is the standard "no unmeasured confounding given $Z$" assumption. We bound its failure in §S1 via the E-value.
+
+## Identification — non-graphical
+
+Conditional exchangeability $Y_d^{(rx=r)} \perp rx \mid Z$ and positivity $0 < P(rx=r \mid Z) < 1$ for every $z$ in support.
+
+## Estimators
+
+1. Propensity score $e(Z) = P(rx=\text{Lev+5FU} \mid Z)$ fit by logistic regression and gradient-boosted classifier; overlap diagnosed by histograms.
+2. IPW Cox with stabilized weights.
+3. AIPW for RMST (hand-coded; ~30 lines).
+4. Double/debiased ML (`econml.dml.LinearDML` with GBM nuisances, 5-fold cross-fit).
+5. Regression-adjusted Cox (covariate-adjusted PH).
+
+All five should land within Q1's randomized CI. If they do not, $Z$ is too sparse or the parametric form is wrong.
+
+## The bad-control demo
+
+A Cox model conditioning additionally on $M$ (recurrence status). $M$ is post-treatment; conditioning on it both (i) blocks the indirect path `rx → M → Y_death` and (ii) opens a collider path `rx → M ← U → Y_death`. The resulting coefficient on `rx` is not interpretable as any causal effect — not the ATE, not the NDE. We display it in the forest plot precisely to show *how much* it diverges.
+
+## Failure modes
+
+| Threat | Bound |
+|--------|-------|
+| Mis-specified $e(Z)$ | DML cross-fit guards against this if outcome regression converges fast enough |
+| Mis-specified outcome regression | AIPW double-robustness |
+| Positivity violation | Diagnosed by overlap histogram; trim or report restricted estimand |
+| Unmeasured `U → rx` | E-value (`sensemakr`); bound in §S1 |
+
+## Target population
+
+Same as Q1.
+
+## Naive-reader mistake
+
+"All four estimators give similar answers, so methods don't matter." The forest plot is constructed to show that the bad-control demo breaks the convergence by a wide margin. The lesson is that *identification* matters; once identification is met, the estimator class is secondary.
+
+# Q3 — Heterogeneous treatment effects (CATE)
+
+## Estimand
+
+$$\tau(z) = E\!\left[Y_d^{(rx=\text{Lev+5FU})} - Y_d^{(rx=\text{Obs})} \,\middle|\, Z = z\right],$$
+
+with RMST(5y) substituted for $Y_d$ as the bounded outcome scale. Headline visualization is $\tau(z) \mapsto \tau(\text{nodes})$ marginalized over the other covariates.
+
+## Cell
+
+Causal × no-selection, conditional version.
+
+## Identification — graphical
+
+Randomization within strata of $Z$ in $G_{\text{trial}}$. The back-door is severed unconditionally; conditioning on $Z$ further refines the contrast.
+
+## Identification — non-graphical
+
+Conditional exchangeability $Y_d^{(rx=r)} \perp rx \mid Z=z$ and positivity at every $z$. Both hold by randomization.
+
+## Estimators
+
+- S-, T-, X-, DR-learners (`econml.metalearners`, `econml.dr`).
+- Causal forest (`econml.grf.CausalForest`, `honest=True`, `inference=True`).
+- Gold-standard comparator: R `grf::causal_survival_forest` via `rpy2`. This handles censoring on the time scale rather than via IPCW-reweighted RMST.
+
+## Diagnostics
+
+- Best-linear-projection of $\tau(Z)$ onto a chosen $\Psi(Z)$ — Semenova & Chernozhukov 2021.
+- Athey-Wager calibration: bin patients by quantile of $\hat\tau(z)$, plot observed-vs-predicted ATE per bin.
+
+## Failure mode
+
+With $n = 929$ and ~10 covariates, leaf-level CIs are wide and pointwise CIs are not jointly valid across $z$. We report this prominently. We do *not* claim that any single $\tau(z)$ value is significantly different from the marginal ATE without an explicit BLP test.
+
+## Target population
+
+Same as Q1. Subgroup interpretations are restricted to the joint support of $Z$ observed in trial.
+
+## Naive-reader mistake
+
+Reading peaks of the $\tau(z)$ heatmap as significant moderation. Reporting a single subgroup effect without its CI ribbon. Treating variable-importance rankings as causal moderator rankings — VI ranks predictors of $\hat\tau$, not causal moderators.
+
+## Substantive hypothesis
+
+Benefit will concentrate in node-positive (stage C) patients. If supported, this is the modern guideline rationale, confirmed via a causal estimand rather than via subgroup HRs. If contradicted, that is itself a publishable finding worth interrogating.
+
+# Q4 — Mediation through recurrence
+
+## Estimand
+
+Decomposition of the total effect of `rx` on `Y_death` through `M = recurrence`:
+
+$$\begin{aligned}
+\text{NIE} &= E\!\left[Y_d^{(rx=1,\, M^{(rx=1)})} - Y_d^{(rx=1,\, M^{(rx=0)})}\right] \\
+\text{NDE} &= E\!\left[Y_d^{(rx=1,\, M^{(rx=0)})} - Y_d^{(rx=0,\, M^{(rx=0)})}\right] \\
+\text{TE}  &= \text{NDE} + \text{NIE}.
+\end{aligned}$$
+
+Plus the *proportion mediated*: $\text{PM} = \text{NIE} / \text{TE}$.
+
+## Cell
+
+Causal × no-selection, with a mediator decomposition.
+
+## Identification — graphical
+
+`rx → M → Y_death` is the indirect path. `rx → Y_death` (the direct edge in $G_{\text{trial}}$) is the direct path. To identify both, no unblocked back-door path may exist from $M$ to $Y_d$ that is *not* through `rx`. The edge `U → Y_death` together with `U → Z → M` (and any latent `U → M`) is the threat: an unobserved frailty that affects both recurrence and survival would bias the decomposition.
+
+This is *not* the front-door setting of Kelleher L8 — there, $X \to Z \to Y$ is the only path and the front-door criterion is the identification tool. Here `rx → Y_death` exists directly, so front-door does not apply. We use the *natural direct/indirect* formulation (Pearl 2001) instead, identified by the Imai-Keele-Yamamoto (2010) assumptions.
+
+## Identification — non-graphical (sequential ignorability)
+
+1. **Treatment ignorability given $Z$.** $\{Y_d^{(rx, m)}, M^{(rx)}\} \perp rx \mid Z$. Satisfied by randomization.
+2. **Mediator ignorability given $rx, Z$.** $Y_d^{(rx, m)} \perp M \mid rx, Z$. *This is the assumption that bites.* An unobserved frailty `U` that affects both `M` and `Y_death` (and is not blocked by `Z`) violates it.
+
+## Estimator
+
+R `mediation::mediate` via `rpy2`, with
+
+- outcome model `coxph(Surv(t_death, status) ~ rx + M + Z)`,
+- mediator model `glm(M ~ rx + Z, family = binomial)`,
+- 1000 bootstrap simulations.
+
+For transparency, we *also* hand-implement the Imai-Keele-Tingley algorithm in Python (~100 lines) and confirm agreement to two decimal places. Reviewers at *Observational Studies* will ask.
+
+## Sensitivity
+
+`mediation::medsens` reports the *Imai $\rho$* — the residual correlation between mediator-model and outcome-model errors at which $\text{NIE} = 0$. We report the breakdown value $\rho^*$ in plain language:
+
+- $\rho^* > 0.30$: moderately robust.
+- $0.15 \leq \rho^* \leq 0.30$: equivocal.
+- $\rho^* < 0.15$: fragile.
+
+## Target population
+
+Same as Q1.
+
+## Naive-reader mistake
+
+Calling the coefficient on `rx` in `coxph(Surv ~ rx + M + Z)` the "direct effect." That coefficient is not the NDE — it is the bad-control estimand from Q2. See Q2 for the demonstration.
+
+## Substantive hypothesis
+
+NIE large, NDE small, $\text{PM} \in [0.7, 0.9]$ — Lev+5FU works primarily by preventing recurrence. If NDE is large, that is the *more* interesting finding (immunomodulation, second-primary suppression) and we lean into it in the discussion.
+
+# Q5 — Transportability
+
+## Estimand
+
+$$\delta_{\text{ATE}}^{\text{target}} = E_{X \mid S=0}\!\left[\tau(X)\right],$$
+
+the trial-derived CATE averaged over the *target* population's covariate distribution. Target: U.S. 1990 resected stage B/C colon cancer patients per SEER.
+
+## Cell
+
+Causal × selection.
+
+## Identification — graphical
+
+Following Kelleher L11. Let $S$ index trial enrollment ($S=1$ trial, $S=0$ SEER). We need $\{Y_d^{(rx)}\}_r \perp S \mid X$ for some set $X$ of effect-modifying baseline covariates. Graphically, $X$ must $d$-separate $S$ from the potential outcomes. In $G_{\text{trial}}$ extended with the $S$ node and edges $Z \to S$, this set is the union of (i) the back-door adjustment set for $rx \to Y_d$ and (ii) any covariate that drives both selection and the effect modifier set identified in Q3.
+
+## Identification — non-graphical
+
+Cole & Stuart (2010): the *transportability* assumption $\{Y_d^{(rx=r)}\}_r \perp S \mid X$ plus positivity of trial inclusion $0 < P(S=1 \mid X=x) < 1$ for every $x$ in the target support.
+
+## Estimator
+
+Inverse-odds-of-sampling weights:
+
+1. Stack trial sample (`S=1`) with SEER 1989–1991 stage B/C resected colon cancer cases (`S=0`).
+2. Fit logistic $\hat e_S(X) = P(S=1 \mid X)$.
+3. For each trial patient compute $w(X) = (1 - \hat e_S(X)) / \hat e_S(X)$.
+4. Re-fit weighted Cox on the trial sample using $w$.
+
+## Failure mode
+
+| Threat | Bound |
+|--------|-------|
+| Mismatched covariate dictionaries (SEER lacks `obstruct`, `perfor`, `adhere`, `differ`?) | Document explicitly which covariates are matched; do not claim transport on covariates not in $X$ |
+| Unmeasured effect modifier $U_X$ | Dahabreh et al. 2019 worst-case bound; report tipping-point HR |
+| Positivity violation in target | Trim or report restricted target estimand |
+
+## Target population
+
+U.S. 1990 resected stage B/C colon cancer patients, per SEER coding. *Not* the global population of colon cancer patients — that would require further transport.
+
+## Naive-reader mistake
+
+Quoting $\hat\delta_{\text{ATE}}^{\text{target}}$ as "the real-world HR" without acknowledging (i) which covariates were matched, (ii) which were assumed exchangeable on faith, and (iii) the Dahabreh tipping point.
+
+# Sensitivity synthesis (§S1, §S2)
+
+Every causal estimate carries one mandatory sensitivity bound:
+
+| Q | Bound |
+|---|-------|
+| Q1 | E-value for HR (VanderWeele-Ding 2017) — though randomization makes this near-vacuous, we report it as a baseline |
+| Q2 | E-value on IPW HR; positivity diagnostic; bad-control divergence as a robustness illustration |
+| Q3 | Athey-Wager calibration; BLP coefficient significance via Semenova-Chernozhukov CIs |
+| Q4 | Imai $\rho^*$ breakdown value |
+| Q5 | Dahabreh worst-case bound under one unmeasured effect modifier |
+
+These collapse into `S2_sensitivity_table.ipynb` — a single master table (estimand × point × 95% CI × sensitivity parameter × breakdown value × qualitative robustness label) that appears in the manuscript abstract and conclusion.
+
+# What this document does *not* commit to
+
+- **A model of `U`.** We bound unmeasured frailty's influence but never estimate it.
+- **A counterfactual at the individual level.** Q3's $\tau(z)$ is the *conditional* ATE — rung 2 — not the individual treatment effect, which would require rung 3 and an SCM with explicit exogenous noise. The closest we get to rung 3 is the Imai-Keele sensitivity, which is an SCM-flavored bound on the joint distribution of potential outcomes.
+- **Estimands on the recurrence outcome alone.** `etype=1` rows are used only to construct $M$. The primary outcome throughout is death (`etype=2`).
+- **Pooled estimands across the Lev-alone arm.** Lev-alone is reported but is not the headline contrast. Pre-specifying this avoids garden-of-forking-paths.
+
+# Reading order
+
+1. This document.
+2. `01_dag.R` — the two DAGs that make every statement above checkable.
+3. `02_data_audit.ipynb` — the data behind the estimands.
+4. `WEEK1_DONE.md` — checklist signed off before Week 2 begins.
+
+If any reviewer (or future self) finds an internal inconsistency between this document and an analysis notebook, **this document wins** and the notebook is fixed. The contract is upstream.

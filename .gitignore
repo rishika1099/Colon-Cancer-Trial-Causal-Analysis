@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+.python-version
+.venv/
+venv/
+env/
+
+# R
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# renv
+renv/library/
+renv/local/
+renv/cellar/
+renv/lock/
+renv/python/
+renv/staging/
+
+# Quarto
+/.quarto/
+_site/
+_book/
+_freeze/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Data (>10 MB only — keep small CSVs in repo)
+data/*.dta
+data/*.rdata
+data/*.RData
+data/raw/
+data/seer_raw/
+
+# Outputs that should be regenerable
+figures/*.pdf
+figures/cache/
+*.log
+.venv/
+shiny_cate_app/model.joblib
+# colon.csv (83 KB) and seer_1990_synthetic.csv (~280 KB) are kept in
+# the repo for one-shot replication; both are reproducible from
+# scripts/pull_colon_data.py and scripts/build_q5.py respectively.

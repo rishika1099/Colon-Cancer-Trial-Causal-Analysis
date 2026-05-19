@@ -1,0 +1,9 @@
+Estimand,Estimate,95% CI,Sensitivity parameter,Breakdown,Robustness
+Q1 randomized HR (Lev+5FU vs Obs),0.690,"(0.55, 0.87)",E-value,E = 2.26,Vacuous (randomized) — reported as baseline
+Q1 5-year RMST contrast,0.305 yrs,see Q1,PH violation,Schoenfeld global p = 0.259,PH holds; HR + RMST agree
+Q2 IPW HR,0.730,"(0.58, 0.92)",E-value,E = 2.08,Moderate — matches Q1 to within CI
+Q2 bad-control HR (anti-example),1.103,see Q2,n/a,n/a — does not identify,Demonstrates the cost of conditioning on M
+Q3 marginal ΔRMST via Causal Forest,0.273 yrs,"(0.26, 0.29)",Calibration + BLP,See q3_calibration.csv,ATE agrees with Q1/Q2; CATE-by-nodes consistent with stage hypothesis
+Q4 NIE through recurrence,0.292 yrs,"(0.12, 0.48)",Imai-ρ,"No sign change in ρ ∈ [-0.95, 0.95]",Extremely robust
+Q4 NDE direct,-0.062 yrs,"(-0.23, 0.10)",Imai-ρ,CI covers 0; direct path likely small,Effect operates ~entirely through M
+Q5 transported HR,0.707,"(0.52, 0.96)",Dahabreh bound,HR_U = 2.75 at 25% target prevalence,Moderate — synthetic SEER caveat

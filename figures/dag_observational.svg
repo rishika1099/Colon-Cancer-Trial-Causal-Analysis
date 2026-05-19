@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='468.00pt' height='324.00pt' viewBox='0 0 468.00 324.00'>
+<g class='svglite'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+    .svglite g.glyphgroup path {
+      fill: inherit;
+      stroke: none;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #FFFFFF;'/>
+<defs>
+  <clipPath id='cpMC4wMHw0NjguMDB8MC4wMHwzMjQuMDA='>
+    <rect x='0.00' y='0.00' width='468.00' height='324.00' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw0NjguMDB8MC4wMHwzMjQuMDA=)'>
+<line x1='270.13' y1='18.26' x2='395.07' y2='18.26' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<polyline points='388.84,21.86 395.07,18.26 388.84,14.66 ' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<line x1='268.16' y1='289.94' x2='414.39' y2='34.06' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<polyline points='414.42,41.26 414.39,34.06 408.17,37.69 ' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<line x1='259.13' y1='289.94' x2='259.13' y2='193.77' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<polyline points='262.73,200.00 259.13,193.77 255.53,200.00 ' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<line x1='259.13' y1='162.17' x2='259.13' y2='34.06' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<polyline points='262.73,40.29 259.13,34.06 255.53,40.29 ' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<line x1='249.47' y1='182.00' x2='39.13' y2='269.63' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<polyline points='43.50,263.91 39.13,269.63 46.27,270.55 ' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<line x1='268.79' y1='168.58' x2='407.17' y2='34.06' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<polyline points='405.21,40.99 407.17,34.06 400.19,35.82 ' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<line x1='249.47' y1='168.58' x2='105.84' y2='28.96' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<polyline points='112.82,30.72 105.84,28.96 107.80,35.88 ' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<line x1='105.84' y1='18.26' x2='248.13' y2='18.26' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<polyline points='241.89,21.86 248.13,18.26 241.89,14.66 ' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<line x1='105.84' y1='18.26' x2='395.07' y2='18.26' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<polyline points='388.84,21.86 395.07,18.26 388.84,14.66 ' style='stroke-width: 0.75; stroke: #BEBEBE;' />
+<text x='259.13' y='22.56' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='10.00px' lengthAdjust='spacingAndGlyphs'>M</text>
+<text x='29.13' y='278.09' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='8.00px' lengthAdjust='spacingAndGlyphs'>S</text>
+<text x='259.13' y='309.96' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='8.67px' lengthAdjust='spacingAndGlyphs'>U</text>
+<text x='423.42' y='21.37' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='44.69px' lengthAdjust='spacingAndGlyphs'>Y_death</text>
+<text x='259.13' y='182.27' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='7.33px' lengthAdjust='spacingAndGlyphs'>Z</text>
+<text x='94.84' y='21.44' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='10.00px' lengthAdjust='spacingAndGlyphs'>rx</text>
+<text x='110.87' y='17.76' style='font-size: 13.20px; font-family: "Arial";' textLength='10.25px' lengthAdjust='spacingAndGlyphs'>G</text>
+<text x='121.13' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='5.14px' lengthAdjust='spacingAndGlyphs'>o</text>
+<text x='126.27' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='5.14px' lengthAdjust='spacingAndGlyphs'>b</text>
+<text x='131.41' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='4.62px' lengthAdjust='spacingAndGlyphs'>s</text>
+<text x='136.04' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='5.14px' lengthAdjust='spacingAndGlyphs'>e</text>
+<text x='141.18' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='3.08px' lengthAdjust='spacingAndGlyphs'>r</text>
+<text x='144.25' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='4.62px' lengthAdjust='spacingAndGlyphs'>v</text>
+<text x='148.87' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='5.14px' lengthAdjust='spacingAndGlyphs'>a</text>
+<text x='154.01' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='2.56px' lengthAdjust='spacingAndGlyphs'>t</text>
+<text x='156.58' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='2.05px' lengthAdjust='spacingAndGlyphs'>i</text>
+<text x='158.63' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='5.14px' lengthAdjust='spacingAndGlyphs'>o</text>
+<text x='163.77' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='5.14px' lengthAdjust='spacingAndGlyphs'>n</text>
+<text x='168.91' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='5.14px' lengthAdjust='spacingAndGlyphs'>a</text>
+<text x='174.05' y='20.54' style='font-size: 9.24px; font-family: "Arial";' textLength='2.05px' lengthAdjust='spacingAndGlyphs'>l</text>
+<text x='176.10' y='17.76' style='font-size: 13.20px; font-family: "Arial";' textLength='19.03px' lengthAdjust='spacingAndGlyphs'>: Z </text>
+<text x='198.19' y='17.76' style='font-size: 13.20px; font-family: "Symbol";' textLength='13.02px' lengthAdjust='spacingAndGlyphs'>→</text>
+<text x='214.25' y='17.76' style='font-size: 13.20px; font-family: "Arial";' textLength='57.12px' lengthAdjust='spacingAndGlyphs'> rx and U </text>
+<text x='274.43' y='17.76' style='font-size: 13.20px; font-family: "Symbol";' textLength='13.02px' lengthAdjust='spacingAndGlyphs'>→</text>
+<text x='290.49' y='17.76' style='font-size: 13.20px; font-family: "Arial";' textLength='66.64px' lengthAdjust='spacingAndGlyphs'> rx restored</text>
+</g>
+</g>
+</svg>

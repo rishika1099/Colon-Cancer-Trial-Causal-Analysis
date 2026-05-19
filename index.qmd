@@ -1,0 +1,17 @@
+---
+title: "Beyond the Hazard Ratio"
+subtitle: "A causal-inference re-analysis of the Moertel 1990 adjuvant colon cancer trial"
+---
+
+This site is the companion to the manuscript. The pages are organized in the order a reader should consume them:
+
+1. **[Estimands & DAG](00_estimands.qmd)** — the contract. Every analysis downstream is bound by what is written here.
+2. **[Data audit](notebooks/02_data_audit.ipynb)** — balance tables, censoring patterns, the `nodes`/`node4` inconsistency.
+3. **Q1 — The randomized ATE** — Kaplan-Meier, Cox PH, RMST(5y) — the answer Moertel et al. reported.
+4. **Q2 — Forget the randomization** — backdoor adjustment, IPW, AIPW, DML, and a deliberate "bad control" demo conditioning on recurrence.
+5. **Q3 — Heterogeneous effects** — meta-learners, causal forest, CATE vs nodes.
+6. **Q4 — Mediation** — natural direct/indirect decomposition through recurrence; Imai-ρ sensitivity.
+7. **Q5 — Transportability** — Cole-Stuart inverse-odds-of-sampling weights to SEER 1990.
+8. **[Manuscript](manuscript.qmd)** — the 8000-word writeup.
+
+Each notebook opens with the estimand, the 2×2 cell, the identifying assumption, the estimator, and the failure mode if the assumption is wrong.

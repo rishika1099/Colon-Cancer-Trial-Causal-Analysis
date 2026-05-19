@@ -1,0 +1,20 @@
+metric,value
+"rows (raw, both etype)",1858
+unique patients,929
+patients (death-row frame),929
+patients (recurrence-row frame),929
+n  arm Obs,315
+n  arm Lev,310
+n  arm Lev+5FU,304
+deaths (overall),452
+death rate (overall),0.487
+recurrences (overall),468
+max  |SMD| across arms,0.126
+missing nodes,18
+missing differ,23
+nodes/node4 inconsistencies (>= convention),90
+nodes/node4 inconsistencies (>  convention; true errors),12
+5-yr death rate  Obs,0.473
+5-yr death rate  Lev,0.465
+5-yr death rate  Lev+5FU,0.365
+5-yr risk diff  Lev+5FU vs Obs,-0.108
