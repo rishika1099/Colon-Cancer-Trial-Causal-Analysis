@@ -62,6 +62,8 @@ Two DAGs are committed and verified by `dagitty`:
 
 ## Featured figures
 
+**Conference-format write-up:** [`report/ieee_report.pdf`](report/ieee_report.pdf) — 5-page IEEE conference paper with embedded tables and figures. Source: [`report/ieee_report.tex`](report/ieee_report.tex). Build with `tectonic ieee_report.tex`.
+
 | | |
 |---|---|
 | **Kaplan–Meier by arm** (Q1)<br/>The 5-year survival gap between Lev+5FU and the other two arms is the headline finding. | **Q2 forest plot — convergence + the bad-control demo**<br/>IPW, AIPW, DML, and regression-adjustment converge with the randomized answer; conditioning on the recurrence mediator flips the sign. |
@@ -79,6 +81,9 @@ Two DAGs are committed and verified by `dagitty`:
 ├── 01_dag.R                      # dagitty DAGs (G_trial + G_observational), SVG export
 ├── manuscript.qmd                # 8-section manuscript draft with embedded results
 ├── manuscript/references.bib     # BibTeX bibliography
+├── report/
+│   ├── ieee_report.tex           # 5-page IEEE conference paper (IEEEtran)
+│   └── ieee_report.pdf           # compiled PDF
 ├── index.qmd                     # Quarto website landing page
 ├── _quarto.yml                   # Quarto website config
 │

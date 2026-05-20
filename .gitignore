@@ -48,6 +48,19 @@ data/seer_raw/
 figures/*.pdf
 figures/cache/
 *.log
+
+# LaTeX intermediates (keep .tex and final .pdf)
+report/*.aux
+report/*.out
+report/*.toc
+report/*.bbl
+report/*.blg
+report/*.fdb_latexmk
+report/*.fls
+report/*.synctex.gz
+report/*.snm
+report/*.nav
+report/*.vrb
 .venv/
 shiny_cate_app/model.joblib
 # colon.csv (83 KB) and seer_1990_synthetic.csv (~280 KB) are kept in
