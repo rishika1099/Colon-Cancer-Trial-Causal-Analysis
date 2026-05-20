@@ -352,6 +352,6 @@ These collapse into `S2_sensitivity_table.ipynb` — a single master table (esti
 1. This document.
 2. `01_dag.R` — the two DAGs that make every statement above checkable.
 3. `02_data_audit.ipynb` — the data behind the estimands.
-4. `WEEK1_DONE.md` — checklist signed off before Week 2 begins.
+4. The analysis notebooks under `notebooks/` and the build scripts under `scripts/` — every cell inherits the header committed here.
 
 If any reviewer (or future self) finds an internal inconsistency between this document and an analysis notebook, **this document wins** and the notebook is fixed. The contract is upstream.

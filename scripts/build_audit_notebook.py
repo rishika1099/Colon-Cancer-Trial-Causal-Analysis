@@ -176,7 +176,7 @@ plt.show()
 
     md("""**Reading the table.** All |SMD| values are below the 0.13 mark; the
 trial is well balanced on every measured baseline. We note this in
-`WEEK1_DONE.md` and proceed. (Wider tails on a few covariates — `sex`,
+the README's headline-results table and proceed. (Wider tails on a few covariates — `sex`,
 `differ` — are expected with $n=310$ per arm.)
 
 ---"""),
@@ -362,7 +362,7 @@ absolute-scale benefit under a Weibull-ish baseline hazard.
 
     md("""## 8. Summary write-out
 
-We write a compact CSV summary that `WEEK1_DONE.md` references."""),
+We write a compact CSV summary that the README references."""),
 
     code("""summary = pd.DataFrame({
     "metric": [

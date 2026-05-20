@@ -1,7 +1,7 @@
 """Quick CLI preview of what 02_data_audit.ipynb will compute.
 
 Used during Week 1 to (a) sanity-check the audit logic before encoding it as
-a notebook and (b) populate the audit-summary table in WEEK1_DONE.md.
+a notebook and (b) populate the audit-summary table in the README.
 """
 from __future__ import annotations
 
