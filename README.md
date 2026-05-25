@@ -115,8 +115,8 @@ you have TeX Live).
 ## Reproducibility
 
 ```bash
-git clone https://github.com/rishika1099/Moertel-Colon-Cancer-Causal-Inference
-cd Moertel-Colon-Cancer-Causal-Inference
+git clone https://github.com/rishika1099/Colon-Cancer-Trial-Causal-Analysis
+cd Colon-Cancer-Trial-Causal-Analysis
 
 # Python 3.11 environment
 python3.11 -m venv .venv && source .venv/bin/activate
@@ -212,7 +212,7 @@ This re-analysis:
   title  = {A Causal-Inference Re-analysis of the Moertel 1990 Adjuvant Colon Cancer Trial},
   author = {Mamidibathula, Rishika},
   year   = {2026},
-  howpublished = {\url{https://github.com/rishika1099/Moertel-Colon-Cancer-Causal-Inference}}
+  howpublished = {\url{https://github.com/rishika1099/Colon-Cancer-Trial-Causal-Analysis}}
 }
 ```
 
