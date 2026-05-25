@@ -331,9 +331,8 @@ plt.show()
 
 This is the simplest possible estimate of the trial's primary effect. Q1's
 properly identified $\\hat\\delta_{5\\text{yr}}$ should be close to this
-crude difference, since randomization makes the naive estimator equal to
-the ATE on observables (Kelleher L1: $\\delta_{\\text{naive}} = \\delta$
-when $Y_d^{(rx)} \\perp rx$)."""),
+crude difference, because randomization makes the naive estimator equal
+to the ATE: $\\delta_{\\text{naive}} = \\delta$ when $Y_d^{(rx)} \\perp rx$."""),
 
     code("""d_anchor = d.copy()
 d_anchor["died_by_5yr"] = (

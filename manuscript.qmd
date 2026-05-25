@@ -1,7 +1,6 @@
 ---
-title: "Beyond the Hazard Ratio"
-subtitle: "A causal-inference re-analysis of the Moertel 1990 adjuvant colon cancer trial"
-author: "Rishika"
+title: "A Causal-Inference Re-analysis of the Moertel 1990 Adjuvant Colon Cancer Trial"
+author: "Rishika Mamidibathula"
 date: today
 abstract: |
   We re-analyze the Moertel et al. NEJM 1990 trial of levamisole plus
@@ -42,34 +41,32 @@ bibliography: manuscript/references.bib
 # Introduction
 
 The Moertel et al. trial [@moertel1990] established adjuvant levamisole +
-5-fluorouracil (Lev+5FU) as the first effective post-operative
-chemotherapy for resected stage B/C colon cancer. The headline statistic
-— a 33% reduction in death hazard, HR ≈ 0.67 — appears in every modern
-oncology textbook and underlies decades of clinical practice. The
-statistic is correct. It is also dangerously incomplete: it elides the
-identifying assumptions, the absolute-scale benefit, the heterogeneity,
-the mechanism, and the question of *for whom* the result applies.
+5-fluorouracil (Lev+5FU) as an effective post-operative chemotherapy for
+resected stage B/C colon cancer. The trial reports a Cox hazard ratio of
+approximately 0.67 for death in the Lev+5FU arm relative to observation.
+That number is a marginal estimate; on its own, it does not describe the
+absolute-scale benefit, heterogeneity across patients, the mechanism
+through which treatment acts, or the populations to which the estimate
+may extend.
 
-This paper re-analyzes the same dataset (n=929; available as
-`survival::colon` or `ForCausality::Colon_df` in R) through five nested
-causal questions, each with its estimand committed to writing *before*
-any estimator is run [@kelleher2026]:
+This project re-analyzes the same dataset (n=929; available as
+`survival::colon` or `ForCausality::Colon_df` in R) using five causal-inference
+methods that are nested in the sense that each adds one additional
+structural concern on top of the previous one:
 
-| Q | Question | Cell | Lecture |
-|----|----------|------|---------|
-| Q1 | The randomized ATE | Causal × no-selection | Kelleher L1, L4, L5 |
-| Q2 | Forget the randomization — back-door identification | Causal × no-selection (obs.) | L3, L4, L5 |
-| Q3 | Heterogeneous treatment effects | Causal × no-selection, conditional | L13 |
-| Q4 | Mediation through recurrence | Causal × no-selection, mediator | L8 |
-| Q5 | Transportability to SEER 1990 | Causal × selection | L11 |
+| Q | Question | Cell |
+|----|----------|------|
+| Q1 | Randomized ATE | Causal, no selection |
+| Q2 | Back-door identification (forget randomization) | Causal, no selection (obs.) |
+| Q3 | Heterogeneous treatment effects (CATE) | Causal, no selection (conditional) |
+| Q4 | Mediation through recurrence | Causal, no selection (mediator) |
+| Q5 | Transportability to SEER 1990 | Causal, with selection |
 
-The contract — `00_estimands.qmd` in the replication package — pre-commits
-each estimand in `do(·)` or potential-outcomes notation, the 2×2 cell
-(statistical/causal × selection/no-selection), the identification
-assumption stated both graphically (via dagitty) and non-graphically (via
-exchangeability/positivity), the estimator, the failure mode if the
-assumption is wrong, the target population, and the naive-reader mistake.
-Every analysis notebook downstream inherits this header.
+The specification sheet — `00_estimands.qmd` in the replication package
+— states each estimand in `do(·)` or potential-outcomes notation, lists
+the graphical and non-graphical identification assumptions, names the
+estimator, and notes the failure mode if the assumption is wrong. Every
+notebook reads from this sheet.
 
 # Estimands and DAGs
 
@@ -305,20 +302,19 @@ breached by any biologically plausible unmeasured confounder. The
 
 # Discussion
 
-The most important contribution here is *not* a new number — it is a new
-form for the old number. Moertel's 0.67 is reproduced (we get 0.69)
-within a framework that makes every step auditable: the estimand is
-written down before the estimator, the identifying graph is drawn before
-the regression is fit, the bad-control anti-example sits next to the
-correct analysis so a reader can see what would have gone wrong, and
-every causal claim carries a matched breakdown bound.
+The five-question structure brings out three things that the published
+hazard ratio alone does not. Moertel's 0.67 is reproduced (we obtain 0.69).
+The estimand is written down before the estimator, the identifying graph
+is drawn before the regression is fit, the bad-control comparison sits
+next to the correct analysis, and every causal claim carries a matched
+sensitivity bound.
 
-Three pedagogically heavy findings emerge:
+Three substantive findings:
 
-1. **The bad-control demo.** The single most common error in EHR-based
-   "causal" analyses is adjustment for post-treatment variables that look
-   predictive of outcome. Here, conditioning on the recurrence mediator
-   converts a 31% hazard reduction into a 10% hazard *increase*. The
+1. **The bad-control comparison.** Adjusting for post-treatment variables
+   that look predictive of outcome is a common modeling error. Here,
+   conditioning on the recurrence mediator converts a 31% hazard
+   reduction into a 10% hazard increase. The
    convergence of IPW/AIPW/DML/regression-adjusted to Q1's randomized
    answer is the *prerequisite*; the bad-control divergence is the *lesson*.
 

@@ -1,19 +1,19 @@
 # IEEE Conference Report
 
-This directory contains the IEEE conference-format write-up of the causal
-re-analysis.
+This directory contains the IEEE conference-format write-up of the
+project.
 
 | File | Description |
 |---|---|
-| `ieee_report.tex` | Source — IEEEtran two-column conference template |
-| `ieee_report.pdf` | Compiled PDF (5 pages, US Letter) |
+| `ieee_report.tex` | Source (IEEEtran two-column conference template). |
+| `ieee_report.pdf` | Compiled PDF, 5 pages, US Letter. |
 
 ## Build
 
 Either toolchain works:
 
 ```bash
-# Tectonic (recommended — self-contained, fetches packages on demand)
+# Tectonic (recommended: self-contained, no system TeX install required)
 tectonic ieee_report.tex
 
 # Or TeX Live
@@ -21,22 +21,22 @@ pdflatex ieee_report.tex
 pdflatex ieee_report.tex   # second pass for cross-refs
 ```
 
-The references are inlined in the `.tex` (no separate `.bib` step) for
-build simplicity. A BibTeX version is available in
-`../manuscript/references.bib` if you prefer to convert.
+The references are inlined in the `.tex` source, so no separate BibTeX
+step is needed. A BibTeX version of the same references is available in
+`../manuscript/references.bib`.
 
-## Contents at a glance
+## Contents
 
-| Section | What it covers |
+| Section | Topic |
 |---|---|
-| Abstract + Keywords | Five-question framing; headline numbers |
-| I. Introduction | Problem statement, contributions |
-| II. Data and Preliminaries | Audit, notation, two DAGs |
-| III. Q1 — Randomized ATE | KM, Cox, RMST, PH check, anchor pass |
-| IV. Q2 — Back-door + bad-control | Five estimators converge; bad-control flips |
-| V. Q3 — Heterogeneous effects | Meta-learners + causal forest + CATE-by-nodes |
-| VI. Q4 — Mediation | Imai-Keele-Tingley + ρ sensitivity |
+| Abstract + keywords | Five-question framing and headline numbers |
+| I. Introduction | Background, contributions |
+| II. Data and Preliminaries | Audit, notation, DAGs |
+| III. Q1 — Randomized ATE | KM, Cox, RMST, PH check |
+| IV. Q2 — Back-door + bad-control | Five estimators plus the bad-control comparison |
+| V. Q3 — Heterogeneous effects | Meta-learners, causal forest, CATE-by-nodes |
+| VI. Q4 — Mediation | Imai-Keele-Tingley + ρ-sensitivity |
 | VII. Q5 — Transportability | Cole-Stuart IOSW + Dahabreh bound |
 | VIII. Sensitivity Synthesis | VanderWeele-Ding E-values |
-| IX. Discussion | Three pedagogical findings |
-| X. Conclusion + Acknowledgment + References | — |
+| IX. Discussion | Three substantive findings |
+| X. Conclusion + References | — |

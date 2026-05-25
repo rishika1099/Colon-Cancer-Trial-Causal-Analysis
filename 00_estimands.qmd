@@ -1,7 +1,7 @@
 ---
 title: "Estimands and Identification"
-subtitle: "The contract for *Beyond the Hazard Ratio*"
-author: "Rishika"
+subtitle: "Specification sheet for the Moertel re-analysis"
+author: "Rishika Mamidibathula"
 date: today
 format:
   html:
@@ -14,11 +14,11 @@ format:
     number-sections: true
 ---
 
-> **Read this document before any code.** Every notebook downstream is bound by what is written here. If something in this document is wrong, every number in the manuscript is wrong. The point of writing it first is to make the assumptions audit-able before the analysis is anchored to a result.
+This document is the specification sheet for the project. Each of the five questions (Q1–Q5) is stated below in `do(·)` or potential-outcomes notation, with its identifying assumption, estimator, failure mode, and target population. The analysis notebooks and build scripts read from this sheet — if a discrepancy appears between a notebook and this document, this document is treated as the source of truth.
 
 # Preliminaries
 
-We follow the notation of the Kelleher course throughout.
+Notation follows Pearl (2009) and Hernán & Robins (2020).
 
 **Causal state.** A random variable treated as a possible cause. In this paper the causal state is `rx ∈ {Obs, Lev, Lev+5FU}`, the randomized treatment arm in Moertel et al. (1990). The headline contrast is `rx = Lev+5FU` vs `rx = Obs`; Lev-alone is reported as a secondary contrast but is not the focus.
 
@@ -92,7 +92,7 @@ In $G_{\text{trial}}$ the edge `Z → rx` is severed. Every back-door path from 
 
 ## Identification — non-graphical
 
-Random assignment by protocol implies $\{Y_d^{(rx=r)}\}_r \perp rx$. Then by the Kelleher derivation (L1, slide "The Framework"):
+Random assignment by protocol implies $\{Y_d^{(rx=r)}\}_r \perp rx$, so
 
 $$\delta_{\text{naive}} = E[Y_d \mid rx=1] - E[Y_d \mid rx=0] = E[Y_d^{(rx=1)}] - E[Y_d^{(rx=0)}] = \delta.$$
 
@@ -244,7 +244,7 @@ Causal × no-selection, with a mediator decomposition.
 
 `rx → M → Y_death` is the indirect path. `rx → Y_death` (the direct edge in $G_{\text{trial}}$) is the direct path. To identify both, no unblocked back-door path may exist from $M$ to $Y_d$ that is *not* through `rx`. The edge `U → Y_death` together with `U → Z → M` (and any latent `U → M`) is the threat: an unobserved frailty that affects both recurrence and survival would bias the decomposition.
 
-This is *not* the front-door setting of Kelleher L8 — there, $X \to Z \to Y$ is the only path and the front-door criterion is the identification tool. Here `rx → Y_death` exists directly, so front-door does not apply. We use the *natural direct/indirect* formulation (Pearl 2001) instead, identified by the Imai-Keele-Yamamoto (2010) assumptions.
+This is not a front-door setting because `rx → Y_death` exists as a direct edge. We use the natural direct/indirect formulation (Pearl 2001) instead, identified under the Imai-Keele-Yamamoto (2010) assumptions.
 
 ## Identification — non-graphical (sequential ignorability)
 
@@ -295,7 +295,7 @@ Causal × selection.
 
 ## Identification — graphical
 
-Following Kelleher L11. Let $S$ index trial enrollment ($S=1$ trial, $S=0$ SEER). We need $\{Y_d^{(rx)}\}_r \perp S \mid X$ for some set $X$ of effect-modifying baseline covariates. Graphically, $X$ must $d$-separate $S$ from the potential outcomes. In $G_{\text{trial}}$ extended with the $S$ node and edges $Z \to S$, this set is the union of (i) the back-door adjustment set for $rx \to Y_d$ and (ii) any covariate that drives both selection and the effect modifier set identified in Q3.
+Let $S$ index trial enrollment ($S=1$ trial, $S=0$ SEER). We need $\{Y_d^{(rx)}\}_r \perp S \mid X$ for some set $X$ of effect-modifying baseline covariates. Graphically, $X$ must $d$-separate $S$ from the potential outcomes. In $G_{\text{trial}}$ extended with the $S$ node and edges $Z \to S$, this set is the union of (i) the back-door adjustment set for $rx \to Y_d$ and (ii) any covariate that drives both selection and the effect modifier set identified in Q3.
 
 ## Identification — non-graphical
 
@@ -354,4 +354,4 @@ These collapse into `S2_sensitivity_table.ipynb` — a single master table (esti
 3. `02_data_audit.ipynb` — the data behind the estimands.
 4. The analysis notebooks under `notebooks/` and the build scripts under `scripts/` — every cell inherits the header committed here.
 
-If any reviewer (or future self) finds an internal inconsistency between this document and an analysis notebook, **this document wins** and the notebook is fixed. The contract is upstream.
+If a discrepancy appears between this document and an analysis notebook, this document is the source of truth and the notebook should be reconciled to match it.

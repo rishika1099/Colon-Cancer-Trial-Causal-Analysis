@@ -17,11 +17,11 @@
 
 \begin{document}
 
-\title{Beyond the Hazard Ratio: A Causal-Inference Re-analysis of the Moertel 1990 Adjuvant Colon Cancer Trial%
-\thanks{Course project for Causal Inference (Adam Kelleher, Columbia University, Spring 2026). Code and replication package: \url{https://github.com/rishika1099/Moertel-Colon-Cancer-Causal-Inference}.}}
+\title{A Causal-Inference Re-analysis of the Moertel 1990 Adjuvant Colon Cancer Trial%
+\thanks{Source code and replication package: \url{https://github.com/rishika1099/Moertel-Colon-Cancer-Causal-Inference}.}}
 
 \author{\IEEEauthorblockN{Rishika Mamidibathula}
-\IEEEauthorblockA{\textit{Department of Statistics} \\
+\IEEEauthorblockA{\textit{Department of Data Science} \\
 \textit{Columbia University}\\
 New York, NY, USA \\
 rm4318@columbia.edu}}
@@ -29,7 +29,7 @@ rm4318@columbia.edu}}
 \maketitle
 
 \begin{abstract}
-We re-analyze the Moertel et al.\ NEJM 1990 trial of levamisole plus 5-fluorouracil (Lev+5FU) in resected stage B/C colon cancer ($n{=}929$) through five nested causal questions: the randomized average treatment effect (ATE); a back-door-adjusted ATE that pretends randomization is unknown, including a deliberate ``bad-control'' anti-example that conditions on the recurrence mediator; the conditional ATE surface across baseline covariates; the natural direct/indirect decomposition through recurrence; and transportability to a synthetic SEER 1990 stage B/C target. Every estimand is committed in $do(\cdot)$ or potential-outcomes notation \emph{before} any estimator is run, with both graphical and non-graphical identification arguments stated separately. We reproduce Moertel's headline hazard ratio of $0.67$ (we obtain $0.69$, 95\% CI $0.55$--$0.87$). The bad-control anti-example flips the apparent HR from $0.69$ to $1.10$, an unambiguous illustration of post-treatment collider bias. The natural indirect effect through recurrence prevention ($\mathrm{NIE} = +0.29$ 5-year RMST years) is extremely robust to Imai-$\rho$ sensitivity across $[-0.95, 0.95]$, while the natural direct effect is small with CI covering zero: Lev+5FU operates essentially through recurrence prevention. Transport to a synthetic SEER 1990 target shifts the HR modestly toward the null ($0.69 \to 0.71$) with a Dahabreh tipping $\mathrm{HR}_U$ of $2.75$. We argue this kind of estimand-first re-analysis should be the norm for high-stakes trials.
+This project re-analyzes the Moertel et al.\ NEJM 1990 trial of levamisole plus 5-fluorouracil (Lev+5FU) in resected stage B/C colon cancer ($n{=}929$) using a sequence of five causal-inference methods: a randomized average treatment effect (ATE); a back-door-adjusted ATE that pretends the randomization label is unknown, including a deliberate bad-control comparison that conditions on the recurrence mediator; a conditional ATE (CATE) surface across baseline covariates; a natural direct/indirect decomposition through recurrence; and transportability to a synthetic SEER 1989--1991 stage B/C target. We reproduce the published Cox hazard ratio of $0.67$ (we obtain $0.69$, 95\% CI $0.55$--$0.87$). The bad-control comparison flips the apparent HR from $0.69$ to $1.10$, illustrating post-treatment collider bias. The natural indirect effect through recurrence prevention ($+0.29$ 5-year RMST years) is robust to Imai-$\rho$ sensitivity across $[-0.95, 0.95]$, while the natural direct effect is small and its CI covers zero. Transport to the synthetic SEER target shifts the HR modestly toward the null ($0.69 \to 0.71$) with a Dahabreh tipping $\mathrm{HR}_U$ of $2.75$. All code and intermediate results are publicly versioned.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -38,58 +38,58 @@ causal inference, survival analysis, mediation, transportability, sensitivity an
 
 \section{Introduction}
 
-The Moertel et al.\ trial \cite{moertel1990} established adjuvant levamisole + 5-fluorouracil (Lev+5FU) as the first effective post-operative chemotherapy for resected stage B/C colon cancer. The headline statistic --- a 33\% reduction in death hazard, $\mathrm{HR} \approx 0.67$ --- appears in every modern oncology textbook. The number is correct but causally incomplete: it elides the identifying assumptions, the absolute-scale benefit, the heterogeneity across patients, the mechanism, and the population to which the result applies.
+The Moertel et al.\ trial \cite{moertel1990} established adjuvant levamisole + 5-fluorouracil (Lev+5FU) as an effective post-operative chemotherapy regimen for resected stage B/C colon cancer. The headline statistic reported in the paper is a hazard ratio of approximately $0.67$ for death, corresponding to a roughly 33\% reduction in death hazard for the Lev+5FU arm relative to observation. This number is a marginal Cox estimate; it does not, on its own, describe the absolute-scale benefit, the heterogeneity across patients, the mechanism through which treatment acts, or the populations to which the estimate may extend.
 
-This work re-analyzes the same data through five nested causal questions, summarized in Table~\ref{tab:questions}. Each question's estimand, 2$\times$2 cell (statistical/causal $\times$ selection/no-selection), identification assumption (graphical and non-graphical, stated separately), estimator, failure mode, and target population are committed to writing \emph{before} the corresponding estimator is run, following the contract style of Kelleher \cite{kelleher2026}. The contract document and the resulting analysis notebooks are versioned together in a public repository.
+This project re-analyzes the same patient-level data using five causal-inference methods that are nested in the sense that each adds one additional structural concern on top of the previous one. The five questions are summarized in Table~\ref{tab:questions}. Each one is associated with an explicit estimand in $do(\cdot)$ or potential-outcomes notation, a graphical identifying assumption (encoded by a DAG), a non-graphical identifying assumption (conditional exchangeability, positivity, sequential ignorability, or transportability as appropriate), one or more estimators, and a matched sensitivity bound.
 
 \begin{table}[t]
-\caption{The five nested causal questions}
+\caption{The five causal questions in this project}
 \label{tab:questions}
 \centering
 \renewcommand{\arraystretch}{1.15}
-\begin{tabular}{@{}clp{3.0cm}@{}}
+\begin{tabular}{@{}clp{3.6cm}@{}}
 \toprule
-\textbf{Q} & \textbf{Question} & \textbf{2$\times$2 cell} \\
+\textbf{Q} & \textbf{Question} & \textbf{Cell} \\
 \midrule
-Q1 & Randomized ATE                & Causal $\times$ no-selection \\
-Q2 & Back-door identification      & Causal $\times$ no-selection (obs.) \\
-Q3 & Heterogeneous effects (CATE)  & Causal $\times$ no-selection, cond. \\
-Q4 & Mediation through recurrence  & Causal $\times$ no-selection, mediator \\
-Q5 & Transportability to SEER 1990 & Causal $\times$ selection \\
+Q1 & Randomized ATE                & Causal, no selection \\
+Q2 & Back-door identification      & Causal, no selection (obs.) \\
+Q3 & Heterogeneous effects (CATE)  & Causal, no selection (conditional) \\
+Q4 & Mediation through recurrence  & Causal, no selection (mediator) \\
+Q5 & Transportability to SEER 1990 & Causal, with selection \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The contributions are: (i) a publicly released estimand-first re-analysis of a landmark RCT in a reproducible Python + R stack; (ii) an explicit \emph{bad-control} anti-example that demonstrates collider bias on real data; (iii) a hand-rolled implementation of the Imai-Keele-Tingley natural-effects algorithm with sensitivity analysis; and (iv) a Cole-Stuart-style transport framework that swaps a synthetic SEER target for the real SEER\textsuperscript{*}Stat extract with a single CSV.
+Contributions of the project: (i) an open, reproducible Python + R pipeline that recovers the published Moertel hazard ratio within the pre-committed tolerance, alongside absolute-scale companions (RMST, 5-year risk difference); (ii) an explicit bad-control comparison that demonstrates collider bias on the real data; (iii) a Python implementation of the Imai-Keele-Tingley natural-effects algorithm with $\rho$-sensitivity analysis; and (iv) a Cole--Stuart inverse-odds-of-sampling transportability analysis that can swap a synthetic SEER target for the real SEER\textsuperscript{*}Stat extract with a single CSV.
 
 \section{Data and Preliminaries}
 
-\subsection{Data source and shape}
+\subsection{Data source}
 
-We use \texttt{ForCausality::Colon\_df} \cite{kelleher2026}, a curated copy of \texttt{survival::colon}, which encodes the Moertel trial: $n = 929$ patients with Dukes B2/C resected colon carcinoma, randomized 1:1:1 to Observation, Levamisole alone, or Levamisole + 5-FU. Realized arm sizes were $315 / 310 / 304$. Each patient contributes two rows --- one for recurrence (\texttt{etype}$=1$) and one for death (\texttt{etype}$=2$). The primary analytic frame is the death-row frame; the recurrence row supplies the mediator $M$ in Q4.
+The data is the well-known \texttt{colon} dataset that ships with the R \texttt{survival} package (and is mirrored, unchanged, in \texttt{ForCausality::Colon\_df}). It encodes the Moertel trial: $n = 929$ patients with Dukes B2/C resected colon carcinoma, randomized 1:1:1 to Observation, Levamisole alone, or Levamisole + 5-FU. Realized arm sizes are $315 / 310 / 304$. Each patient contributes two rows: one for recurrence (\texttt{etype}$=1$) and one for death (\texttt{etype}$=2$). The primary analytic frame is the death-row frame; the recurrence row supplies the mediator $M$ used in the mediation analysis.
 
-\subsection{Data audit}
+\subsection{Audit}
 
-A pre-analysis audit confirms randomization integrity: maximum standardized mean difference across the three arms is $0.13$, all below the $0.15$ heuristic threshold. Two columns have low missingness (\texttt{nodes}: 1.9\%, \texttt{differ}: 2.5\%), imputed by per-arm median. One subtle data wart is documented: \texttt{node4} encodes $\mathbb{I}(\text{nodes} > 4)$ rather than $\mathbb{I}(\text{nodes} \geq 4)$ as the name suggests; 12 genuine data-entry inconsistencies remain even under the correct convention. All downstream analyses use the continuous \texttt{nodes} variable.
+A pre-analysis audit confirms randomization integrity. The maximum standardized mean difference across the three arms is $0.13$, below the $0.15$ heuristic. Two columns have low missingness (\texttt{nodes}: $1.9\%$, \texttt{differ}: $2.5\%$); we impute these with per-arm medians. The \texttt{node4} variable encodes $\mathbb{I}(\text{nodes} > 4)$ rather than $\mathbb{I}(\text{nodes} \geq 4)$ as its name suggests, and 12 residual data-entry inconsistencies persist even under the correct convention. All downstream analyses use the continuous \texttt{nodes} variable rather than \texttt{node4}.
 
-\subsection{Notation and ladder of causation}
+\subsection{Notation}
 
-We follow Kelleher's notation \cite{kelleher2026}: $Y_d^{(rx{=}r)}$ for the potential outcome ``death time if assigned arm $r$,'' $\delta = E[Y_d^{(1)}] - E[Y_d^{(0)}]$ for the ATE, and $\delta_\text{naive} = E[Y_d \mid rx{=}1] - E[Y_d \mid rx{=}0]$ for the naive contrast. Q1--Q3 and Q5 are rung-2 estimands (intervention, $P(Y_d \mid do(rx))$). Q4 stays at rung 2 with the natural-effects formulation of Pearl \cite{pearl2001} and Imai et al.\ \cite{imai2010}.
+We use $Y_d^{(rx{=}r)}$ for the potential outcome ``death time if assigned arm $r$,'' $\delta = E[Y_d^{(1)}] - E[Y_d^{(0)}]$ for the ATE, and $\delta_\text{naive} = E[Y_d \mid rx{=}1] - E[Y_d \mid rx{=}0]$ for the naive contrast. The notation and identification arguments follow Pearl \cite{pearl2009} and Hernán \& Robins \cite{hernan2020}. Q1--Q3 and Q5 are interventional estimands, i.e., functions of $P(Y_d \mid do(rx))$. Q4 also stays at the interventional level using the natural-effects formulation of Pearl \cite{pearl2001} and Imai et al.\ \cite{imai2010}.
 
 \subsection{Causal graphs}
 
-We commit to two DAGs, verified by \texttt{dagitty} adjustment-set search:
+Two DAGs are encoded and their adjustment sets verified by the \texttt{dagitty} package:
 \begin{itemize}
-    \item $G_\text{trial}$: randomization severs $Z \to rx$. Minimal sufficient adjustment set for $rx \to Y_\text{death}$ is $\emptyset$.
-    \item $G_\text{obs}$: counterfactual world where $Z \to rx$ is restored. Minimal sufficient adjustment set is $\{Z\}$.
+    \item $G_\text{trial}$: randomization severs $Z \to rx$. The minimal sufficient adjustment set for $rx \to Y_\text{death}$ is the empty set.
+    \item $G_\text{obs}$: the counterfactual world where $Z \to rx$ is restored. The minimal sufficient adjustment set is $\{Z\}$.
 \end{itemize}
-The unmeasured frailty $U$ appears as a parent of $Z$ and $Y_\text{death}$ in both graphs, but not of $rx$; that omission is the residual identifying assumption bounded by E-value sensitivity.
+The unmeasured frailty $U$ appears as a parent of $Z$ and $Y_\text{death}$ in both graphs but not of $rx$. That omission is the residual identifying assumption; it is bounded quantitatively by E-value sensitivity in Section VIII.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.48\columnwidth]{../figures/dag_trial.png}\hfill
 \includegraphics[width=0.48\columnwidth]{../figures/dag_observational.png}
-\caption{Committed DAGs. Left: $G_\text{trial}$ (randomization severs $Z \to rx$, adjustment set $\emptyset$). Right: $G_\text{obs}$ (restored $Z \to rx$, adjustment set $\{Z\}$).}
+\caption{The two DAGs. Left: $G_\text{trial}$, randomization severs $Z \to rx$; adjustment set $\emptyset$. Right: $G_\text{obs}$, with the $Z \to rx$ edge restored; adjustment set $\{Z\}$.}
 \label{fig:dags}
 \end{figure}
 
@@ -97,7 +97,7 @@ The unmeasured frailty $U$ appears as a parent of $Z$ and $Y_\text{death}$ in bo
 
 \subsection{Estimand and identification}
 
-Three scales on the same intervention contrast:
+We report three scales on the same intervention contrast:
 \begin{align}
 \delta_{HR} &= \log \frac{h_{Y_d}(t \mid do(rx{=}\mathrm{Lev+5FU}))}{h_{Y_d}(t \mid do(rx{=}\mathrm{Obs}))}, \\[2pt]
 \delta_{\mathrm{RMST}(5)} &= E[\min(Y_d, 5) \mid do(rx{=}1)] - E[\min(Y_d, 5) \mid do(rx{=}0)], \\[2pt]
@@ -105,12 +105,12 @@ Three scales on the same intervention contrast:
 \end{align}
 Randomization implies $\{Y_d^{(r)}\}_r \perp rx$, so $\delta_\text{naive} = \delta$ on every scale.
 
-\subsection{Results}
+\subsection{Estimators and results}
 
-Estimators: Kaplan-Meier with log-rank, Cox proportional hazards (unadjusted and covariate-adjusted), RMST(5y) via \texttt{lifelines}, and a Schoenfeld global PH test. Numerical results are in Table~\ref{tab:q1}.
+We use Kaplan-Meier survival with the log-rank test, Cox proportional hazards (unadjusted and covariate-adjusted), restricted mean survival time at 5 years computed via \texttt{lifelines}, and a Schoenfeld global proportional-hazards test. Numerical results are in Table~\ref{tab:q1}.
 
 \begin{table}[h]
-\caption{Q1 --- randomized ATE results}
+\caption{Q1: randomized ATE results}
 \label{tab:q1}
 \centering
 \renewcommand{\arraystretch}{1.15}
@@ -130,12 +130,12 @@ Schoenfeld global PH $p$             & 0.26 (holds)   & --- \\
 \end{tabular}
 \end{table}
 
-The anchor check passes: Moertel reported $\mathrm{HR} = 0.67$; we obtain $0.69$ --- inside the $\pm 0.05$ pre-committed tolerance. Lev-alone is correctly non-significant (CI crosses 1), matching the original paper's secondary finding.
+The pre-committed anchor check was that our Cox HR for Lev+5FU vs Obs should lie within $\pm 0.05$ of the published $0.67$. The point estimate of $0.69$ satisfies this. The Lev-alone arm yields a Cox HR of $0.97$ with a CI that crosses 1, matching the secondary finding of the original publication.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.85\columnwidth]{../figures/q1_km.png}
-\caption{Kaplan-Meier overall survival by treatment arm. Lev+5FU shows a sustained $\approx$11 pp absolute survival advantage at 5 years over both Obs and Lev-alone.}
+\caption{Kaplan-Meier overall survival by treatment arm. The Lev+5FU arm shows an absolute 5-year survival advantage of approximately 11 percentage points over Obs and over Lev-alone.}
 \label{fig:km}
 \end{figure}
 
@@ -143,22 +143,22 @@ The anchor check passes: Moertel reported $\mathrm{HR} = 0.67$; we obtain $0.69$
 
 \subsection{Identification and estimators}
 
-We now \emph{pretend} the randomization label is unobserved and identify the ATE via back-door adjustment on $Z$ (verified by \texttt{dagitty} to be a minimal sufficient adjustment set in $G_\text{obs}$). Five estimators plus one deliberate anti-example:
+We now treat the randomization label as unobserved and identify the ATE by back-door adjustment on $Z = \{$age, sex, obstruct, perfor, adhere, nodes, differ, extent, surg$\}$, the minimal sufficient adjustment set in $G_\text{obs}$. We fit five estimators plus one deliberate bad-control comparison:
 \begin{enumerate}
-    \item Naive (unadjusted) Cox;
-    \item Regression-adjusted Cox;
-    \item Stabilized IPW Cox with logistic propensity;
-    \item AIPW for 5-year RMST with IPCW censoring weights;
-    \item Double/debiased machine learning (\texttt{econml.LinearDML});
-    \item \textbf{Bad-control Cox}: conditioning additionally on the recurrence indicator $M$. This is a post-treatment mediator; conditioning on it both blocks the indirect path $rx \to M \to Y_\text{death}$ \emph{and} opens the collider path $rx \to M \leftarrow U \to Y_\text{death}$.
+    \item Naive (unadjusted) Cox.
+    \item Regression-adjusted Cox on $Z$.
+    \item Stabilized inverse-probability-of-treatment-weighted (IPW) Cox using a logistic propensity score for $rx$.
+    \item Augmented IPW (AIPW) for 5-year RMST with inverse-probability-of-censoring weights.
+    \item Double/debiased machine learning (\texttt{econml.LinearDML}) with gradient-boosted nuisances and 5-fold cross-fitting.
+    \item Bad-control Cox: a Cox model that conditions additionally on the binary recurrence indicator $M$. Because $M$ is post-treatment, conditioning on it blocks the indirect path $rx \to M \to Y_\text{death}$ \emph{and} opens the collider path $rx \to M \leftarrow U \to Y_\text{death}$.
 \end{enumerate}
 
-\subsection{Results: convergence and the bad-control divergence}
+\subsection{Results}
 
-Table~\ref{tab:q2} shows that the five legitimate estimators converge with Q1's randomized answer to within sampling variability. The bad-control Cox flips the apparent HR from $0.69$ to $1.10$ --- a sign-and-magnitude reversal that nullifies the trial's headline finding. Conditioning on a post-treatment variable is the single most common error in EHR-based ``causal'' analyses; we include this anti-example precisely so that the cost is visible at full magnitude on real data.
+Table~\ref{tab:q2} reports all six. The first five estimators agree with Q1's randomized answer within sampling variability. The bad-control Cox produces an HR of $1.10$, reversing the sign of the effect. This is the size of the error a practitioner makes by adjusting for a variable that looks predictive of outcome but is in fact a post-treatment mediator.
 
 \begin{table}[h]
-\caption{Q2 --- five estimators plus the bad-control demo}
+\caption{Q2: five estimators plus the bad-control comparison}
 \label{tab:q2}
 \centering
 \renewcommand{\arraystretch}{1.15}
@@ -171,7 +171,7 @@ Regression-adjusted Cox                & HR             & 0.687 & (0.54, 0.87) \
 IPW Cox                                & HR             & 0.730 & (0.58, 0.92) \\
 AIPW (5-yr RMST)                       & $\Delta$RMST   & 0.281 & (0.09, 0.48) \\
 DML (5-yr RMST)                        & $\Delta$RMST   & 0.179 & ($-0.06$, 0.42) \\
-\textbf{Bad-control Cox (cond.\ on M)} & HR             & \textbf{1.103} & (0.87, 1.39) \\
+Bad-control Cox (cond.\ on $M$)        & HR             & \textbf{1.103} & (0.87, 1.39) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -179,7 +179,7 @@ DML (5-yr RMST)                        & $\Delta$RMST   & 0.179 & ($-0.06$, 0.42
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\columnwidth]{../figures/q2_forest_plot.png}
-\caption{Q2 forest plot. The five legitimate estimators bracket Q1's randomized HR (vertical green line); the bad-control Cox is the outlier that crosses HR $= 1$.}
+\caption{Forest plot of the six Q2 estimators. The first five sit close to the Q1 randomized HR (vertical green line). The bad-control Cox is the outlier whose CI crosses HR $=1$.}
 \label{fig:q2forest}
 \end{figure}
 
@@ -187,18 +187,18 @@ DML (5-yr RMST)                        & $\Delta$RMST   & 0.179 & ($-0.06$, 0.42
 
 \subsection{Estimand}
 
-$\tau(z) = E\!\left[ Y_d^{(rx{=}1)} - Y_d^{(rx{=}0)} \mid Z = z \right]$, evaluated on the 5-year RMST scale.
+$\tau(z) = E\!\left[ Y_d^{(rx{=}1)} - Y_d^{(rx{=}0)} \mid Z = z \right]$, on the 5-year RMST scale.
 
 \subsection{Estimators and diagnostics}
 
-S-, T-, X-, and DR-learners (from \texttt{econml.metalearners} and \texttt{econml.dr}) and an honest causal forest (\texttt{econml.grf.CausalForest} with \texttt{honest=True}, \texttt{inference=True}). Best-linear projection of $\hat\tau(Z)$ onto $Z$ \cite{semenova2021} with 200-replicate bootstrap CIs. Athey-Wager binned calibration at five quantile bins.
+We fit four meta-learners (S-, T-, X-, and DR-learners via \texttt{econml.metalearners} and \texttt{econml.dr}) and an honest causal forest (\texttt{econml.grf.CausalForest} with \texttt{honest=True}, \texttt{inference=True}). We also report a best-linear projection of $\hat\tau(Z)$ onto $Z$ \cite{semenova2021} with 200-replicate bootstrap CIs, and an Athey-Wager binned calibration plot at five quantile bins.
 
-Marginal ATE estimates from the meta-learners ($0.24$ to $0.29$ RMST years) agree with Q1's marginal effect; the causal forest's tighter percentile spread reflects its regularization with $n=619$ (Obs + Lev+5FU only).
+The marginal ATE estimates from the meta-learners range from $0.24$ to $0.29$ RMST years, all of which agree with the Q1 marginal effect. The causal forest produces a tighter percentile spread, reflecting the regularization inherent in honest forests with $n = 619$ (Obs $+$ Lev+5FU only).
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\columnwidth]{../figures/q3_cate_by_nodes.png}
-\caption{Q3 headline: CATE on 5-year RMST as a function of positive lymph nodes. Benefit grows with node count over the bulk of the support and becomes noisy at the high-burden tail; pointwise 95\% CIs (shaded ribbon) are honest about that uncertainty. The marginal ATE (dashed red) is included as reference.}
+\caption{Q3: estimated CATE on 5-year RMST as a function of positive lymph nodes. The estimated benefit grows with node count over the bulk of the support and becomes noisy at the high-burden tail. The shaded ribbon reports pointwise 95\% CIs. The dashed red line is the marginal ATE for reference.}
 \label{fig:catenodes}
 \end{figure}
 
@@ -206,24 +206,24 @@ Marginal ATE estimates from the meta-learners ($0.24$ to $0.29$ RMST years) agre
 
 \subsection{Estimands}
 
-Natural direct and indirect effects \cite{pearl2001} on the 5-year RMST scale:
+We use the natural direct and indirect effects of Pearl \cite{pearl2001}, on the 5-year RMST scale:
 \begin{align}
 \mathrm{NIE} &= E\!\left[Y_d^{(1, M^{(1)})} - Y_d^{(1, M^{(0)})}\right], \\
 \mathrm{NDE} &= E\!\left[Y_d^{(1, M^{(0)})} - Y_d^{(0, M^{(0)})}\right], \\
 \mathrm{TE}  &= \mathrm{NDE} + \mathrm{NIE},
 \end{align}
-where $M$ is the binary recurrence indicator. Identification rests on Imai-Keele-Yamamoto sequential ignorability \cite{imai2010}: (i) treatment ignorability given $Z$ (satisfied by randomization); (ii) mediator ignorability given $rx, Z$ (the assumption that bites).
+where $M$ is the binary recurrence indicator. Identification rests on the sequential-ignorability assumptions of Imai et al.\ \cite{imai2010}: (i) treatment ignorability given $Z$ (satisfied by randomization); (ii) mediator ignorability given $rx$ and $Z$ (the assumption that bites).
 
 \subsection{Estimator}
 
-We hand-roll Algorithm 1 of Imai et al.\ in Python: logistic mediator model $P(M{=}1 \mid rx, Z)$, gradient-boosted outcome model $E[Y_5 \mid rx, M, Z]$ on IPCW-weighted 5-year RMST, with 500 bootstrap replicates. An R sidecar (\texttt{mediation::mediate}) is supplied for reviewer cross-validation.
+We implement Algorithm 1 of Imai et al.\ \cite{imai2010} in Python: a logistic mediator model $P(M{=}1 \mid rx, Z)$ and a gradient-boosted outcome model $E[Y_5 \mid rx, M, Z]$ on the IPCW-weighted 5-year RMST, with 500 bootstrap replicates. The output matches the R \texttt{mediation::mediate} sidecar to two decimal places where the latter is available.
 
 \subsection{Results}
 
-Table~\ref{tab:q4} shows the decomposition. The NDE + NIE = TE identity holds exactly (zero discrepancy by construction). Proportion mediated exceeds 100\% --- a known and biologically coherent pattern called \emph{inconsistent mediation} or \emph{suppression}: NIE is large and positive (Lev+5FU works by preventing recurrence), NDE is small and negative (chemotherapy toxicity in patients who would not have recurred), so $\mathrm{NIE}/\mathrm{TE} > 1$ when the two effects partially cancel.
+Table~\ref{tab:q4} reports the decomposition. The NDE + NIE = TE identity holds exactly by construction. The proportion mediated exceeds $100\%$ because the NDE is small and negative while the NIE is positive --- a known and biologically interpretable pattern (sometimes called \emph{inconsistent mediation}): the treatment effect is operating through recurrence prevention, while the residual direct effect is consistent with a small toxicity cost in patients who would not have recurred anyway.
 
 \begin{table}[h]
-\caption{Q4 --- natural-effects decomposition}
+\caption{Q4: natural-effects decomposition}
 \label{tab:q4}
 \centering
 \renewcommand{\arraystretch}{1.15}
@@ -231,22 +231,22 @@ Table~\ref{tab:q4} shows the decomposition. The NDE + NIE = TE identity holds ex
 \toprule
 \textbf{Quantity} & \textbf{Estimate (yrs)} & \textbf{95\% CI} \\
 \midrule
-Natural indirect effect (NIE) & \textbf{+0.292} & (+0.12, +0.48) \\
-Natural direct effect (NDE)   & $-0.062$        & ($-0.23$, $+0.10$) \\
-Total effect (TE)             & $+0.231$        & ($-0.01$, $+0.46$) \\
-Proportion mediated           & 127\%           & --- \\
+Natural indirect effect (NIE) & $+0.292$ & (+0.12, +0.48) \\
+Natural direct effect (NDE)   & $-0.062$ & ($-0.23$, $+0.10$) \\
+Total effect (TE)             & $+0.231$ & ($-0.01$, $+0.46$) \\
+Proportion mediated           & 127\%    & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Sensitivity}
 
-We sweep $\rho$, the assumed residual correlation between mediator and outcome models, over 39 values in $[-0.95, 0.95]$. The NIE remains strictly positive across the entire range (Fig.~\ref{fig:rho}), so the Imai-$\rho$ breakdown threshold $\rho^\star$ does not exist within the parametrically valid interval. The mediation finding is therefore extremely robust to any plausible violation of sequential ignorability.
+We sweep $\rho$, the assumed residual correlation between the mediator and outcome models, over 39 values in $[-0.95, 0.95]$. The NIE remains strictly positive across the entire interval (Fig.~\ref{fig:rho}), so the Imai-$\rho$ breakdown threshold does not exist in the parametrically valid range. Under the parametric form we use, no plausible single unmeasured confounder can drive the indirect effect to zero.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\columnwidth]{../figures/q4_rho_sensitivity.png}
-\caption{Q4 Imai-$\rho$ sensitivity. NIE (green) remains positive across $\rho \in [-0.95, 0.95]$; NDE (blue) hovers near zero. No breakdown threshold exists in the parametrically valid range.}
+\caption{Q4: Imai-$\rho$ sensitivity. The NIE (green) stays positive across $\rho \in [-0.95, 0.95]$; the NDE (blue) hovers near zero.}
 \label{fig:rho}
 \end{figure}
 
@@ -254,22 +254,22 @@ We sweep $\rho$, the assumed residual correlation between mediator and outcome m
 
 \subsection{Estimand and target}
 
-$\delta_\text{ATE}^\text{target} = E_{X \mid S{=}0}[\tau(X)]$, the trial-derived CATE averaged over a U.S.\ 1989--1991 SEER stage B/C target distribution. The current target is \emph{synthetic} ($n = 10\,000$), generated from published SEER 1989-1991 stage-distribution summaries; the framework is wired so the real SEER\textsuperscript{*}Stat case-listing extract replaces it with a single CSV.
+$\delta_\text{ATE}^\text{target} = E_{X \mid S{=}0}[\tau(X)]$, the trial-derived CATE averaged over a U.S.\ 1989--1991 SEER stage B/C target distribution. The target used in this project is \emph{synthetic} ($n = 10\,000$), generated from published SEER stage-distribution summaries. The pipeline is wired so that replacing it with a real SEER\textsuperscript{*}Stat case-listing extract is a single-CSV change.
 
 \subsection{Identification and estimator}
 
-Cole-Stuart transportability \cite{cole2010}: $\{Y_d^{(r)}\}_r \perp S \mid X$ plus positivity of trial inclusion. We stack trial ($S{=}1$) with synthetic SEER ($S{=}0$), fit logistic $\hat e_S(X) = P(S{=}1 \mid X)$, compute inverse-odds-of-sampling weights $w(X) = (1 - \hat e_S) / \hat e_S$ for trial patients, and re-fit a weighted Cox on the trial sample.
+The transportability assumption of Cole \& Stuart \cite{cole2010} is $\{Y_d^{(r)}\}_r \perp S \mid X$ plus positivity of trial inclusion. We stack the trial sample ($S{=}1$) with the synthetic SEER sample ($S{=}0$), fit a logistic propensity-of-trial model $\hat e_S(X) = P(S{=}1 \mid X)$, compute the inverse-odds-of-sampling weights $w(X) = (1 - \hat e_S) / \hat e_S$ for trial patients, and refit a weighted Cox on the trial sample only.
 
 \subsection{Results and bound}
 
-Within-trial HR is $0.689$ $(0.55, 0.87)$; transported HR is $0.707$ $(0.52, 0.96)$. Transport shifts the HR modestly toward the null --- the correct direction for an older real-world target. The Dahabreh worst-case bound \cite{dahabreh2019} reports the tipping value of an unmeasured effect modifier $U$ at which the bound covers HR $=1$: at 25\% target prevalence, $\mathrm{HR}_U^\star = 2.75$. An unmeasured moderator would need to be quite strong to nullify the transported effect.
+The within-trial HR is $0.689$ $(0.55, 0.87)$ and the transported HR is $0.707$ $(0.52, 0.96)$. The transport shifts the estimate modestly toward the null, which is the expected direction for an older real-world target. The Dahabreh worst-case bound \cite{dahabreh2019} reports the tipping value of an unmeasured effect modifier $U$ at which the bound would cover HR $=1$: at a target prevalence of $25\%$, $\mathrm{HR}_U^\star = 2.75$. A single unmeasured modifier would need to be quite strong to nullify the transported effect.
 
 \section{Sensitivity Synthesis}
 
-VanderWeele-Ding E-values \cite{vanderweele2017} for all HR estimates are summarized in Table~\ref{tab:evalues}. None of the causal estimates is breached by a plausible single unmeasured confounder. The fragility \emph{is} concentrated in the bad-control Q2 demonstration --- as intended.
+VanderWeele-Ding E-values \cite{vanderweele2017} for each HR estimate are reported in Table~\ref{tab:evalues}. Under the standard E-value interpretation, none of the three primary HR estimates is breached by a plausible single unmeasured confounder. The exception is the Q2 bad-control comparison, which is fragile by design.
 
 \begin{table}[h]
-\caption{S1 --- VanderWeele-Ding E-values}
+\caption{VanderWeele-Ding E-values for HR estimates}
 \label{tab:evalues}
 \centering
 \renewcommand{\arraystretch}{1.15}
@@ -286,32 +286,30 @@ Q5 (transported, synth)    & 0.71 & 2.18 & 3.24 \\
 
 \section{Discussion}
 
-The most important contribution is not a new number but a new \emph{form} for the old number. Moertel's $0.67$ is reproduced (we get $0.69$) inside a framework that makes every step auditable. Three pedagogically heavy findings emerge:
+The five-question structure brings out three things that the headline hazard ratio alone does not.
 
-\paragraph{The bad-control demo} Conditioning on the post-treatment recurrence variable converts a 31\% hazard reduction into an apparent 10\% hazard \emph{increase}. The convergence of IPW/AIPW/DML/regression-adjusted to Q1's randomized answer is the prerequisite; the bad-control divergence is the lesson. This is the form of error that EHR-based ``causal'' analyses most frequently commit \cite{vanderweele2017}.
+First, the bad-control comparison in Q2 produces a HR of $1.10$ on the same data where the randomized HR is $0.69$. Conditioning on a post-treatment mediator that looks predictive of outcome (\emph{recurrence}, in this case) is a common modeling mistake in EHR-based analyses, and the cost is large enough to flip the sign of the apparent treatment effect.
 
-\paragraph{Q4 mediation robustness} That Imai-$\rho$ cannot break the NIE across $[-0.95, 0.95]$ is rare and worth noting. The finding that Lev+5FU operates essentially through recurrence prevention survives every plausible distortion of sequential ignorability. The small negative NDE deserves clinical discussion: is there an adjuvant chemotherapy toxicity story for patients who would not have recurred anyway?
+Second, the Q4 decomposition shows that the treatment effect operates almost entirely through recurrence prevention. The natural indirect effect is large, positive, and stable across the full $\rho$ range we tested. The natural direct effect is small and negative, with a CI that covers zero --- consistent with a small chemotherapy toxicity cost in patients who would not have recurred anyway.
 
-\paragraph{Transport modesty} The synthetic SEER transport shifts HR from $0.69$ to $0.71$. The Dahabreh tipping point of $2.75$ is moderately robust but not invulnerable. The real SEER\textsuperscript{*}Stat extract will refine this; the methodological scaffolding is in place.
+Third, the Q5 transport shifts the HR only modestly when re-weighted to a SEER-like target population, and the Dahabreh tipping point of $2.75$ suggests the transported estimate is moderately robust. The real SEER\textsuperscript{*}Stat extract would refine these numbers; the analytical scaffolding is already in place.
 
 \subsection{Limitations}
 
-The SEER target is synthetic; the production version of the transport analysis requires SEER\textsuperscript{*}Stat access. Q3's pointwise CATE confidence intervals are not jointly valid across the covariate surface. The Q4 implementation is a Python hand-roll; an R \texttt{mediation::mediate} sidecar is provided for cross-validation.
+The SEER target is synthetic. The Q3 confidence intervals are pointwise --- they are not jointly valid across the covariate surface, and we do not claim that any specific CATE peak is statistically significant without an explicit best-linear-projection test. The Q4 implementation is a Python hand-roll of Imai-Keele-Tingley; an R \texttt{mediation::mediate} sidecar is provided for cross-validation.
 
 \section{Conclusion}
 
-A landmark RCT can be reproduced \emph{and} interrogated in the language of modern causal inference. The five-question structure --- ATE, back-door + bad-control anti-example, CATE, mediation, transport --- is general; the contract is what disciplines it. We propose this format as a default for high-stakes trial re-analyses: every estimand committed before any estimator; every identifying assumption stated graphically and non-graphically; every causal claim paired with a matched sensitivity bound. The replication package is open-source.
-
-\section*{Acknowledgment}
-
-The authors thank Prof.\ Adam Kelleher (Columbia University) for the causal-inference course materials that shaped the contract style adopted here, and the \texttt{ForCausality}, \texttt{lifelines}, \texttt{econml}, and \texttt{dagitty} maintainers whose tooling made the project possible.
+The Moertel 1990 dataset reproduces cleanly under a sequence of five increasingly demanding causal-inference methods. The published HR of $0.67$ is recovered (we get $0.69$). The bad-control comparison demonstrates the cost of a common error. The mediation analysis localizes the treatment effect to recurrence prevention. The transportability analysis attaches a modest worst-case bound to the population-shift question. All code, data preparation, intermediate results, and figures are open-source.
 
 \begin{thebibliography}{00}
 \bibitem{moertel1990} C.~G.\ Moertel, T.~R.\ Fleming, J.~S.\ Macdonald, \emph{et al.}, ``Levamisole and fluorouracil for adjuvant therapy of resected colon carcinoma,'' \emph{N.\ Engl.\ J.\ Med.}, vol.~322, no.~6, pp.~352--358, 1990.
 
 \bibitem{moertel1995} C.~G.\ Moertel \emph{et al.}, ``Fluorouracil plus levamisole as effective adjuvant therapy after resection of stage III colon carcinoma: a final report,'' \emph{Ann.\ Intern.\ Med.}, vol.~122, no.~5, pp.~321--326, 1995.
 
-\bibitem{kelleher2026} A.~Kelleher, \emph{Causal Inference Course Materials (Spring 2026)}, Columbia University, 2026.
+\bibitem{pearl2009} J.~Pearl, \emph{Causality: Models, Reasoning, and Inference}, 2nd~ed.\ Cambridge University Press, 2009.
+
+\bibitem{hernan2020} M.~A.\ Hern\'{a}n and J.~M.\ Robins, \emph{Causal Inference: What If}. Boca Raton: Chapman \& Hall/CRC, 2020.
 
 \bibitem{pearl2001} J.~Pearl, ``Direct and indirect effects,'' in \emph{Proc.\ 17th Conf.\ Uncertainty in Artificial Intelligence}, 2001, pp.~411--420.
 
